@@ -1,0 +1,10 @@
+
+app:
+  redis:
+    host: localhost
+    port: 6379
+
+    consumer:
+      groupName: app
+      destination: queueName
+      offset: 0-0
