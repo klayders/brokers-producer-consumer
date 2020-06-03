@@ -21,7 +21,7 @@ public class RedisConsumer {
   private final RedisConsumerProperties redisConsumerProperties;
   private final BrokerMetrics brokerMetrics;
 
-  @PostConstruct
+//  @PostConstruct
   void exampleConsumer() {
     createGroupIfNotExist()
         .thenMany(readMessages())

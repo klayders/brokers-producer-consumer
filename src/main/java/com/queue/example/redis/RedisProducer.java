@@ -20,9 +20,9 @@ public class RedisProducer {
   private final RedisConsumerProperties redisConsumerProperties;
   private final BrokerMetrics brokerMetrics;
 
-  @PostConstruct
+//  @PostConstruct
   void produceMessages() {
-    Flux.range(0, 1_000_000)
+    Flux.range(0, 1)
         .flatMap(integer -> redisReactiveCommands.xadd(redisConsumerProperties.getDestination(), generateRandomMap(integer)))
         .doOnNext(messageId -> {
           brokerMetrics.incrProducer("redis");
