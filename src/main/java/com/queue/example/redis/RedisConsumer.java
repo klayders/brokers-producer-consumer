@@ -1,10 +1,10 @@
 package com.queue.example.redis;
 
 import com.queue.example.config.props.redis.RedisProperties.RedisConsumerProperties;
+import com.queue.example.metrics.BrokerMetrics;
 import io.lettuce.core.Consumer;
 import io.lettuce.core.XReadArgs;
 import io.lettuce.core.api.reactive.RedisReactiveCommands;
-import java.time.Duration;
 import javax.annotation.PostConstruct;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,11 +19,13 @@ public class RedisConsumer {
 
   private final RedisReactiveCommands<String, String> redisReactiveCommands;
   private final RedisConsumerProperties redisConsumerProperties;
+  private final BrokerMetrics brokerMetrics;
 
   @PostConstruct
   void exampleConsumer() {
     createGroupIfNotExist()
         .thenMany(readMessages())
+        .doOnNext(ignore -> brokerMetrics.incrConsumer("redis"))
         .subscribe();
   }
 
@@ -39,7 +41,7 @@ public class RedisConsumer {
             redisConsumerProperties.getGroupName()
         )
         .onErrorResume(e -> {
-          log.info("exampleConsumer: Group={} already exist", redisConsumerProperties.getGroupName());
+//          log.info("exampleConsumer: Group={} already exist", redisConsumerProperties.getGroupName());
           return Mono.just("already exist");
         });
   }
@@ -50,7 +52,7 @@ public class RedisConsumer {
         XReadArgs.StreamOffset.lastConsumed(redisConsumerProperties.getDestination())
     )
         .repeatWhen(Flux::repeat)
-        .doOnNext(messages -> log.info("exampleConsumer: messageId={}, body={}", messages.getId(), messages.getBody()))
+//        .doOnNext(messages -> log.info("exampleConsumer: messageId={}, body={}", messages.getId(), messages.getBody()))
         //  confirm done message
         .flatMap(
             message -> redisReactiveCommands.xack(
